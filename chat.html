@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+
+<html>
+    <link rel="stylesheet" href="styles.css">
+    <script src="myscripts.js"></script>
+
+    <script type="text/javascript">
+        var id = prompt('Please enter your id');
+        var name = prompt('Please enter your name');
+
+    </script>
+<form>
+  Laboratorio 4 (chat)<br>
+  
+  <div id="Messages" ></div>
+
+  <textarea id="BoardInput" name="Text1" cols="80" rows="8" placeholder="Type Message" maxlength="140" style="overflow:unset"></textarea>
+  <label id="chars">140</label> 
+  <input id="Button" type="button" value="Submit" onclick=myFunction()>
+  <input id="Refresh" type="button" value="Refresh Chat" onclick=ref()>
+  <script>
+        
+        var input = document.getElementById("BoardInput");
+        input.addEventListener("keyup", function(event) {
+            event.preventDefault();
+            if (event.keyCode === 13) {
+                document.getElementById("Button").click();
+                console.log("APACHARON ENTER");
+            }else{
+            var maxLength = 140;
+            //$('textarea').keyup(function() {
+            var length = document.getElementById("BoardInput").value.length
+            var length = maxLength-length;
+            console.log(length);
+            //$('#chars').text(length);
+            document.getElementById("chars").innerHTML = length+"/140";
+            }
+        });
+        </script>
+  <script>
+
+        function ref(){
+        console.log("Prueba del fetch");
+        //----------------------------------------Prueba para el FETCH-----------------------------
+        const url = 'http://34.210.35.174:7000'; // Get 10 random users
+        document.getElementById("Messages").innerHTML = "";
+        fetch(url)
+        .then((resp) => resp.json()) // Transform the data into json
+        .then(resp => {
+        // Here you get the data to modify as you please
+        console.log(resp);
+        console.log("El tamanio es de :" + resp.length)
+        var lista = resp;
+        for (var respuesta of lista){
+            console.log(respuesta.nick +" : "+ respuesta.text);
+            document.getElementById("Messages").innerHTML = document.getElementById("Messages").innerHTML+"<br>"+ respuesta.nick +" : "+ respuesta.text+"<br>";
+            //===================================PRUEBA DETECCION
+            var x = respuesta.text;
+            var pruebaurl = 1;
+            var pruebaimage=1;           
+            if(new RegExp("([a-zA-Z0-9]+://)?([a-zA-Z0-9_]+:[a-zA-Z0-9_]+@)?([a-zA-Z0-9.-]+\\.[A-Za-z]{2,4})(:[0-9]+)?(/.*)?").test(x)) {
+                pruebaurl=0;
+                var URLInMessage = x.match(new RegExp("([a-zA-Z0-9]+://)?([a-zA-Z0-9_]+:[a-zA-Z0-9_]+@)?([a-zA-Z0-9.-]+\\.[A-Za-z]{2,4})(:[0-9]+)?(/.*)?"))[0];
+                if (URLInMessage.match(/\.(jpeg|jpg|gif|png)$/)){
+                    pruebaimage=0;
+                    var URLOfImmage
+                    URLOfImmage = "Image from: (" + URLInMessage+")";
+                    URLInMessage= URLOfImmage+"<br><img  src=\""  + URLInMessage+  "\" width=\"500\" height=\"600\" >"+"<br> "  ;
+                }
+                if(pruebaimage==1){
+
+                      URLInMessage= "<br><img src=\"https://api.thumbnail.ws/api/ab68853ccc682951736e1ea2b65879b1a8889394624f/thumbnail/get?url="+URLInMessage+"/&width=300\" style=\"width:300px;height:168px;\">";
+                }
+            }
+
+            //document.getElementById("Messages").innerHTML =;
+            if (pruebaurl==0){
+
+                if (pruebaimage==0){
+                    document.getElementById("Messages").innerHTML =document.getElementById("Messages").innerHTML+"<br>"+"<br>" + "-----Detected Image-----" + URLInMessage+""+"<br>";
+
+                }else if(pruebaimage==1){
+                    document.getElementById("Messages").innerHTML =document.getElementById("Messages").innerHTML+"<br>"+"<br>" + "-----Detected URL-----" + URLInMessage+""+"<br>";
+
+                }
+
+            }else if (pruebaurl==1){
+
+                //document.getElementById("Messages").innerHTML =document.getElementById("Messages").innerHTML+"<br>"+ name +" : "+ x ;
+
+            }
+            
+            //document.getElementById("BoardInput").value ="";
+        
+
+            //===================================PRUEBA DETECCION
+
+        }
+        console.log("Entre al punto de modificar la data");
+        
+        })
+        
+        .catch(function(error) {
+        // If there is any error you will catch them here
+        console.log("Tiro algun error");
+        });   
+        //----------------------------------------Prueba para el FETCH-----------------------------
+    }
+
+        //========================================FUNCION PARA ESCRIBIR LO QUE TENGO==============
+
+        function myFunction() {
+            var x = document.getElementById("BoardInput").value;
+            //++++++++++++++++++++++++++++++++++++++++++PRUEBA PARA EL POST CON FETC+++++++++++++++++++
+
+            console.log("LO QUE MANDA EL POST:");
+            var string= '{student_id:\"'+id +'\",text:\"'+x+'\",nick:\"'+name+'\"'+'}';
+           // console.log(string);
+            console.log("lo que tiene de ultimo es: --"+x.slice(-1)+"--")
+            var result = x.slice(-1).localeCompare("\n");
+            if(result==0){  
+                string = string.replace(/(\r\n\t|\n|\r\t)/gm,"");
+                console.log("EL NUEVO STRING");
+                console.log(string);
+                //console.log(JSON.parse( string));
+                
+            }else{
+                console.log(string);
+                //console.log(JSON.parse( string));
+            }
+
+            //___________________________________________CODIGO PARA POST CON FETCH_____________________
+            
+            const urll = 'http://34.210.35.174:7000';
+            //var url = 'https://example.com/profile';
+            //var data = {username: 'example'}; esto sera el string
+            Firm = new FormData();
+            Firm.append("student_id",id);
+            Firm.append("text",x);
+            Firm.append("nick",name);
+
+            fetch(urll, {
+            method: 'POST', // or 'PUT'
+            body: Firm // data can be `string` or {object}!  
+            })
+            .catch(error => console.error('Error:', error))
+            .then(response => console.log('Success:', response));
+            //___________________________________________CODIGO PARA POST CON FETCH_____________________
+            alert("Mensaje enviado");
+            console.log(result) ;
+            //++++++++++++++++++++++++++++++++++++++++++PRUEBA PARA EL POST CON FETC++++++++++++++++++++
+            document.getElementById("BoardInput").value ="";
+            ref();
+        }
+        //========================================FUNCION PARA ESCRIBIR LO QUE TENGO==============
+        </script>
+
+
+</form>
+
+</html>
